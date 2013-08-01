@@ -15,7 +15,7 @@ OBJ
   XBEE : "FullDuplexSerial"
 
 var
-  long c1, c2, v1, buff, incoming, LCD_Status, XBee_Status, p, s, t, counter
+  long buff, incoming, LCD_Status, XBee_Status, p, s, t, rgbState
   
 pub main | i
   p := $080000
@@ -45,7 +45,7 @@ pub main | i
               XBEE.tx(incoming)
             18:
               LCD_Status := 18
-              counter := 1
+              setState
         2:
           XBEE.tx(incoming)
           if (incoming == 4)
@@ -60,20 +60,12 @@ pub main | i
             else
               LCD_Status :=0
         18:
-          case counter
-            1:
-              p := incoming
-              p <<= 8
-            2:
-              p := p + incoming
-              p <<= 8
-            3:
-              p := p + incoming
-            4:
-              leftStrip.start("6",0,p,s,t)
-              rightStrip.start("6",1,p,s,t)
-              LCD_Status := 0
-          counter++
+          buildColors(incoming)
+          
+          if(colorsBuilt)
+            leftStrip.start("6",0,p,s,t)
+            rightStrip.start("6",1,p,s,t)
+            LCD_Status := 0
             
     incoming := -1
       !OUTA[16]
@@ -101,5 +93,32 @@ pub main | i
               XBee_Status :=0
       buff := -1
       !OUTA[23]
-    
+
+pub setState
+  p := 0
+  s := 0
+  t := 0
+  rgbState := 1
+          
+pub buildColors(rgbByte)
+  case rgbState
+    1, 2:
+      p := p + rgbByte
+      p <<= 8
+    3:
+      p := p + rgbByte
+    4, 5:
+      s := s + rgbByte
+      s <<= 8
+    6:
+      s := s + rgbByte
+    7, 8:
+      t := t + rgbByte
+      t <<= 8
+    9:
+      t := t + rgbByte
+  rgbState++
+
+pub colorsBuilt
+  return (rgbState == 10)
     
