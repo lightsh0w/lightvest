@@ -39,9 +39,6 @@ pub runShow(show, side, primary, secondary, tertiary)
   MS_001 := CLKFREQ / 1_000
 
   case show
-    "0":
-      repeat
-        clearStrip
     "1":
       repeat
         larson(primary, secondary)
@@ -61,6 +58,9 @@ pub runShow(show, side, primary, secondary, tertiary)
     "6":
       repeat
         on(primary)
+    other:
+      repeat
+        clearStrip
 
 pub larson(primary, secondary) | i, j
   'Larson Scanner                                                 
