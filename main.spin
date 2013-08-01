@@ -15,7 +15,7 @@ OBJ
   XBEE : "FullDuplexSerial"
 
 var
-  long buff, incoming, LCD_Status, XBee_Status, p, s, t, rgbState
+  long buff, incoming, LCD_Status, XBee_Status, p, s, t, rgbState,Show_Num
   
 pub main | i
   p := $080000
@@ -32,7 +32,7 @@ pub main | i
   leftStrip.start(5,0, p, s, t) 
   repeat
    incoming := LCD.RxCheck 
-    if(incoming => 0)       
+    if(incoming => 0)
       case LCD_Status
         0:
           case incoming
@@ -42,34 +42,38 @@ pub main | i
           
             16:
               LCD_Status := 16
-              XBEE.tx(incoming)
+              'XBEE.tx(incoming)
+              setState
             18:
               LCD_Status := 18
+              XBEE.tx(incoming)
               setState
+              rgbState++
         2:
           XBEE.tx(incoming)
           if (incoming == 4)
           LCD_Status :=0
 
         16: 
-          if (incoming <> 16)
-            XBEE.tx(incoming)
-            if (incoming <> 4)
-              leftStrip.start(incoming, 0, p, s, t)
-              rightStrip.start(incoming,1, p, s, t)
-            else
-              LCD_Status :=0
-        18:
-          buildColors(incoming)
-          
+          XBEE.tx(rgbState)
+          if (rgbState == 0)
+            Show_Num := incoming      
+          buildColors(incoming)      
           if(colorsBuilt)
+            leftStrip.start(Show_Num,0,p,s,t)
+            rightStrip.start(Show_Num,1,p,s,t)
+            LCD_Status := 0
+       18:
+         XBEE.tx(incoming)      
+         buildColors(incoming)      
+         if(colorsBuilt)
             leftStrip.start("6",0,p,s,t)
             rightStrip.start("6",1,p,s,t)
             LCD_Status := 0
             
     incoming := -1
       !OUTA[16]
-
+ 
    buff := XBEE.RxCheck  
     if(buff > 0)
        case XBee_Status
@@ -93,12 +97,12 @@ pub main | i
               XBee_Status :=0
       buff := -1
       !OUTA[23]
-
+  
 pub setState
   p := 0
   s := 0
   t := 0
-  rgbState := 1
+  rgbState := 0
           
 pub buildColors(rgbByte)
   case rgbState
