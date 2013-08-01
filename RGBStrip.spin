@@ -40,7 +40,8 @@ pub runShow(show, side, primary, secondary, tertiary)
 
   case show
     "0":
-      clearStrip
+      repeat
+        clearStrip
     "1":
       repeat
         larson(primary, secondary)
@@ -57,6 +58,9 @@ pub runShow(show, side, primary, secondary, tertiary)
     "5":
       repeat
         rotate(primary, secondary)
+    "6":
+      repeat
+        on(primary)
 
 pub larson(primary, secondary) | i, j
   'Larson Scanner                                                 
@@ -125,6 +129,12 @@ pub fadeUpDown(primary) | i
     latchStrip
     waitcnt(75_000 + cnt)
 
+pub on(primary)
+  repeat leds
+    pushColor(primary)
+  latchStrip
+  msPause(2)
+  
 pub clearStrip
   repeat leds
     pushColor(black)
