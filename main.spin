@@ -15,9 +15,12 @@ OBJ
   XBEE : "FullDuplexSerial"
 
 var
-  long c1, c2, v1, buff, incoming,LCD_Status,XBee_Status
+  long c1, c2, v1, buff, incoming, LCD_Status, XBee_Status, p, s, t
   
 pub main | i
+  p := $080000
+  s := $000800
+  t := $000008
   XBEE.Start(2,4,%0000,9_600)
   LCD.Start(0,1,%0000,9_600)
   dira[23]~~
@@ -26,7 +29,7 @@ pub main | i
   OUTA[23] := 1
   LCD_Status := 0
   XBee_Status := 0
-  leftStrip.start(5,0) 
+  leftStrip.start(5,0, p, s, t) 
   repeat
    incoming := LCD.RxCheck 
     if(incoming > 0)       
@@ -49,8 +52,8 @@ pub main | i
           if (incoming <> 16)
             XBEE.tx(incoming)
             if (incoming <> 4)
-              leftStrip.start(incoming, 0)
-              rightStrip.start(incoming,1)
+              leftStrip.start(incoming, 0, p, s, t)
+              rightStrip.start(incoming,1, p, s, t)
             else
               LCD_Status :=0
     incoming := -1
@@ -74,8 +77,8 @@ pub main | i
 
         16: 
           if(buff <> 16)
-              leftStrip.start(buff, 0)
-              rightStrip.start(buff,1)
+              leftStrip.start(buff, 0, p, s, t)
+              rightStrip.start(buff,1, p, s, t)
               XBee_Status :=0
       buff := -1
       !OUTA[23]
