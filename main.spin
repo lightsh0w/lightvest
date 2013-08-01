@@ -11,45 +11,83 @@ OBJ
   pst           : "Parallax Serial Terminal"
   leftStrip     : "RGBStrip" 
   rightStrip    : "RGBStrip"
-  pst1  : "FullDuplexSerial"
+  LCD  : "FullDuplexSerial"
   XBEE : "FullDuplexSerial"
 
 var
-  long c1, c2, v1, buff, incoming
+  long c1, c2, v1, buff, incoming,LCD_Status,XBee_Status
   
 pub main | i
   XBEE.Start(2,4,%0000,9_600)
-  pst1.Start(0,1,%0000,9_600)
+  LCD.Start(0,1,%0000,9_600)
   dira[23]~~
   dira[16]~~
   OUTA[16] := 1
   OUTA[23] := 1
-  'leftStrip.start(5,0)
-  'rightStrip.start(5,1)
+  LCD_Status := 0
+  XBee_Status := 0
+  leftStrip.start(5,0) 
   repeat
-   incoming := pst1.RxCheck 
+   incoming := LCD.RxCheck 
     if(incoming > 0)       
-      XBEE.tx(incoming)
-      leftStrip.start(incoming, 0)
-      rightStrip.start(incoming, 1) 
-      incoming := -1
+      case LCD_Status
+        0:
+          case incoming
+            2:       
+              LCD_Status := 2
+              XBEE.tx(incoming)
+          
+            16:
+              LCD_Status :=16
+              XBEE.tx(incoming)
+        2:
+          XBEE.tx(incoming)
+          if (incoming == 4)
+          LCD_Status :=0
+
+        16: 
+          if (incoming <> 16)
+            XBEE.tx(incoming)
+            if (incoming <> 4)
+              leftStrip.start(incoming, 0)
+              rightStrip.start(incoming,1)
+            else
+              LCD_Status :=0
+    incoming := -1
       !OUTA[16]
+
    buff := XBEE.RxCheck  
     if(buff > 0)
-      leftStrip.start(buff, 0)
-      rightStrip.start(buff, 1) 
-      pst1.tx(buff) 
+       case XBee_Status
+          0:
+            case buff
+              2:
+                 XBee_Status := 2
+                 LCD.tx(buff)
+          
+              16:
+                 XBee_Status :=16
+          2:
+            LCD.tx(buff)
+            if (buff == 4)
+            XBee_Status :=0
+
+        16: 
+          if(buff <> 16)
+              leftStrip.start(buff, 0)
+              rightStrip.start(buff,1)
+              XBee_Status :=0
       buff := -1
       !OUTA[23]
   
- {{ dira[16]~~ 
-  repeat
+  
+  'rightStrip.start(5,1)
+  {{repeat
     repeat i from 1 to 1
-      !OUTA[16]
-      'leftStrip.start(0,0)
-      'rightStrip.start(0,1)
-      'waitcnt(80_000 + cnt)
-      leftStrip.start(i,0)
+      leftStrip.start(0,0)
+      rightStrip.start(0,1)
+      waitcnt(80_000 + cnt)
+      leftStrip.start(i, 0)
       rightStrip.start(i,1)
       'pst.dec(c1)
       'pst.str(string(13))
