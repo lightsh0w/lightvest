@@ -42,7 +42,7 @@ pub main | i
           
             16:
               LCD_Status := 16
-              'XBEE.tx(incoming)
+              XBEE.tx(incoming)
               setState
             18:
               LCD_Status := 18
@@ -52,10 +52,10 @@ pub main | i
         2:
           XBEE.tx(incoming)
           if (incoming == 4)
-          LCD_Status :=0
+           LCD_Status :=0
 
         16: 
-          XBEE.tx(rgbState)
+          XBEE.tx(incoming)
           if (rgbState == 0)
             Show_Num := incoming      
           buildColors(incoming)      
@@ -64,7 +64,7 @@ pub main | i
             rightStrip.start(Show_Num,1,p,s,t)
             LCD_Status := 0
        18:
-         XBEE.tx(incoming)      
+         XBEE.tx(incoming)
          buildColors(incoming)      
          if(colorsBuilt)
             leftStrip.start("6",0,p,s,t)
@@ -75,7 +75,7 @@ pub main | i
       !OUTA[16]
  
    buff := XBEE.RxCheck  
-    if(buff > 0)
+    if(buff => 0)
        case XBee_Status
           0:
             case buff
@@ -84,17 +84,32 @@ pub main | i
                  LCD.tx(buff)
           
               16:
-                 XBee_Status :=16
+               XBee_Status :=16
+               setState
+             18:
+              XBee_Status := 18
+              setState
+              rgbState++
+                
           2:
             LCD.tx(buff)
             if (buff == 4)
-            XBee_Status :=0
+             XBee_Status :=0
+          16: 
+           if (rgbState == 0)
+             Show_Num := buff      
+           buildColors(buff)      
+           if(colorsBuilt)
+             leftStrip.start(Show_Num,0,p,s,t)
+             rightStrip.start(Show_Num,1,p,s,t)
+             XBee_Status := 0
+        18:      
+         buildColors(buff)      
+         if(colorsBuilt)
+            leftStrip.start("6",0,p,s,t)
+            rightStrip.start("6",1,p,s,t)
+            XBee_Status := 0
 
-        16: 
-          if(buff <> 16)
-              leftStrip.start(buff, 0, p, s, t)
-              rightStrip.start(buff,1, p, s, t)
-              XBee_Status :=0
       buff := -1
       !OUTA[23]
   
