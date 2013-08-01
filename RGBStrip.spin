@@ -1,13 +1,6 @@
 con
   white         = $808080
   black         = $000000
-  red           = $800000
-  green         = $008000
-  blue          = $000080
-  lime          = $9FEE00
-  pink          = $CD0074
-  orange        = $FF7400
-  purple        = $7109AA
   leds          = 32
   
 OBJ
@@ -22,16 +15,16 @@ var
   byte SPI_DAT_PIN
   byte cog
   
-pub start(show, side)         
+pub start(show, side, primary, secondary, tertiary)         
   stop
-  return cog := cognew(runShow(show, side), @stack)
+  return cog := cognew(runShow(show, side, primary, secondary, tertiary), @stack)
   
 pub stop     
   if(cog)                
     cogstop(cog)
     cog := 0
 
-pub runShow(show, side)
+pub runShow(show, side, primary, secondary, tertiary)
   if(side == 1)
     SPI_CLK_PIN := 6
     SPI_DAT_PIN := 3
@@ -50,48 +43,48 @@ pub runShow(show, side)
       clearStrip
     "1":
       repeat
-        larson
+        larson(primary, secondary)
     "2":
       repeat
         boom(5)                      
         waitcnt(US_1000*1000 + cnt)
     "3":
       repeat
-        altCol
+        altCol(primary, secondary)
     "4":
       repeat
-        fadeUpDown
+        fadeUpDown(primary)
     "5":
       repeat
-        rotate
+        rotate(primary, secondary)
 
-pub larson| i, j
+pub larson(primary, secondary) | i, j
   'Larson Scanner                                                 
   'j = the current RGB LED you are drawing
   'i = the position of the Larson RGB LED on the strip
   repeat j from 1 to leds                        'count up for Larson to go from beggining
     repeat i from 1 to leds
       if i == j
-        pushColor(red)
+        pushColor(secondary)
       else
-        pushColor(blue)
+        pushColor(primary)
     latchStrip
   repeat j from leds to 1                        'count down to bring larson back to start
     repeat i from 1 to leds
       if i == j
-        pushColor(red)
+        pushColor(secondary)
       else
-        pushColor(blue)
+        pushColor(primary)
     latchStrip
 
-pub rotate | bits, i     
+pub rotate(primary, secondary)| bits, i     
   bits := %00000000000000000000000000000001
   repeat
     repeat i from 1 to leds
       if((bits >> i) == 1)
-        pushColor(orange)
+        pushColor(secondary)
       else
-        pushColor(blue)
+        pushColor(primary)
     latchStrip
     msPause(6)
     bits := bits <- 1
@@ -108,19 +101,19 @@ pub boom(count)
       pushColor(black)                                  'clear strip to blank RGB_LEDS
     msPause(2)
 
-pub altCol
+pub altCol(primary, secondary)
   repeat (leds/2)
-    pushColor(lime) 
-    pushColor(pink)
+    pushColor(primary) 
+    pushColor(secondary)
   latchStrip
   waitcnt(50_000_000 + cnt)
   repeat (leds/2)
-    pushColor(pink) 
-    pushColor(lime)
+    pushColor(secondary) 
+    pushColor(primary)
   latchStrip
   waitcnt(50_000_000 + cnt)
 
-pub fadeUpDown | i       
+pub fadeUpDown(primary) | i       
   repeat i from $0 to $008080 step $000101
     repeat leds
       pushColor(i)
