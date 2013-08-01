@@ -15,7 +15,7 @@ OBJ
   XBEE : "FullDuplexSerial"
 
 var
-  long c1, c2, v1, buff, incoming, LCD_Status, XBee_Status, p, s, t
+  long c1, c2, v1, buff, incoming, LCD_Status, XBee_Status, p, s, t, Counter
   
 pub main | i
   p := $080000
@@ -32,7 +32,8 @@ pub main | i
   leftStrip.start(5,0, p, s, t) 
   repeat
    incoming := LCD.RxCheck 
-    if(incoming > 0)       
+    if(incoming => 0)
+     XBEE.tx(incoming)       
       case LCD_Status
         0:
           case incoming
@@ -43,6 +44,10 @@ pub main | i
             16:
               LCD_Status :=16
               XBEE.tx(incoming)
+            18:
+             LCD_Status := 18
+             Counter :=1
+             
         2:
           XBEE.tx(incoming)
           if (incoming == 4)
@@ -56,9 +61,25 @@ pub main | i
               rightStrip.start(incoming,1, p, s, t)
             else
               LCD_Status :=0
+        18:
+            case Counter
+             1:
+               p := incoming
+               p <<= 8
+             2:
+               p := p + incoming
+               p <<= 8
+             3:
+               p := p + incoming
+             4:
+               leftStrip.start("6",0,p,s,t)
+               rightStrip.start("6",1,p,s,t)
+              LCD_Status :=0
+           Counter++
+         
     incoming := -1
       !OUTA[16]
-
+ 
    buff := XBEE.RxCheck  
     if(buff > 0)
        case XBee_Status
@@ -83,7 +104,7 @@ pub main | i
       buff := -1
       !OUTA[23]
   
-  
+    {
   'rightStrip.start(5,1)
   {{repeat
     repeat i from 1 to 1
@@ -96,4 +117,4 @@ pub main | i
       'pst.str(string(13))
       waitcnt(CLKFREQ*8 + cnt) }}
     
-    
+    }
