@@ -58,6 +58,15 @@ pub runShow(show, side, primary, secondary, tertiary)
     "6":
       repeat
         on(primary)
+    "7":
+      repeat    
+        repeat 3
+          larson($000080, $800000)
+        repeat 3
+          boom(5)
+          waitcnt(CLKFREQ + cnt)
+        repeat 3
+          rotate($000080, $800000)
     other:
       repeat
         clearStrip
@@ -83,7 +92,7 @@ pub larson(primary, secondary) | i, j
 
 pub rotate(primary, secondary)| bits, i     
   bits := %00000000000000000000000000000001
-  repeat
+  repeat leds
     repeat i from 1 to leds
       if((bits >> i) == 1)
         pushColor(secondary)
