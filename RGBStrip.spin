@@ -67,12 +67,48 @@ pub runShow(show, side, primary, secondary, tertiary)
           waitcnt(CLKFREQ + cnt)
         repeat 3
           rotate($000080, $800000)
+        repeat 3
+          LarsonTwo
     "8":
       repeat
         pretty
+    "9":
+      repeat
+        LarsonTwo
     other:
       repeat
         clearStrip
+pub LarsonTwo | counter1, counter2, Colour1_Pos, Colour2_Pos,Fade_Counter
+Colour1_Pos :=1
+Colour2_Pos :=32
+Fade_Counter :=16
+  repeat counter1 from 1 to 32
+    repeat counter2 from 1 to 32
+     case counter2
+       Colour1_Pos:
+         pushColor($800000)
+       Colour2_Pos:
+         pushColor($800000)
+       other:
+         pushColor(Fade_Counter)
+   latchStrip
+   Fade_Counter := Fade_Counter + 4 
+   Colour1_Pos++
+   Colour2_Pos--
+
+  repeat counter1 from 1 to 32
+    repeat counter2 from 1 to 32
+     case counter2
+       Colour1_Pos:
+         pushColor($800000)
+       Colour2_Pos:
+         pushColor($800000)
+       other:
+         pushColor(Fade_Counter)
+   latchStrip
+   Fade_Counter := Fade_Counter - 4 
+   Colour1_Pos--
+   Colour2_Pos++
 
 pub larson(primary, secondary) | i, j
   'Larson Scanner                                                 
