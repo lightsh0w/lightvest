@@ -67,6 +67,9 @@ pub runShow(show, side, primary, secondary, tertiary)
           waitcnt(CLKFREQ + cnt)
         repeat 3
           rotate($000080, $800000)
+    "8":
+      repeat
+        pretty
     other:
       repeat
         clearStrip
@@ -143,6 +146,33 @@ pub on(primary)
     pushColor(primary)
   latchStrip
   msPause(2)
+
+pub pretty | c, w
+  w := 20_000_000
+  c := $800000
+  pushColor(c)
+  latchStrip
+  repeat $80
+    c -= $10000
+    c += $100
+    repeat leds
+      pushColor(c)
+    latchStrip
+    waitcnt(w + cnt)
+  repeat $80
+    c -= $100
+    c += $1
+    repeat leds
+      pushColor(c)
+    latchStrip
+    waitcnt(w + cnt)
+  repeat $80
+    c -= $1
+    c += $10000
+    repeat leds
+      pushColor(c)
+    latchStrip
+    waitcnt(w + cnt)
   
 pub clearStrip
   repeat leds
