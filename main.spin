@@ -15,12 +15,11 @@ OBJ
   XBEE : "FullDuplexSerial"
 
 var
-  long buff, incoming, LCD_Status, XBee_Status, p, s, t, rgbState,Show_Num
+  long buff, incoming, LCD_Status, XBee_Status, p, s, t, rgbState, Show_Num
+  long pressCnt
   
 pub main | i
-  p := $080000
-  s := $000800
-  t := $000008
+  pressCnt := 1
   XBEE.Start(2,4,%0000,9_600)
   LCD.Start(0,1,%0000,9_600)
   dira[23]~~
@@ -28,10 +27,9 @@ pub main | i
   OUTA[16] := 1
   OUTA[23] := 1
   LCD_Status := 0
-  XBee_Status := 0
-  leftStrip.start(5,0, p, s, t) 
+  XBee_Status := 0              
   repeat
-   incoming := LCD.RxCheck 
+    incoming := LCD.RxCheck 
     if(incoming => 0)
       case LCD_Status
         0:
@@ -60,55 +58,63 @@ pub main | i
             Show_Num := incoming      
           buildColors(incoming)      
           if(colorsBuilt)
-            leftStrip.start(Show_Num,0,p,s,t)
-            rightStrip.start(Show_Num,1,p,s,t)
+            leftStrip.start(Show_Num,0,p,s,t, pressCnt)
+            rightStrip.start(Show_Num,1,p,s,t, pressCnt)
+            if(Show_Num == "*")
+              pressCnt <-= 1
+            if(Show_Num == "6")
+              pressCnt := 1
             LCD_Status := 0
-       18:
-         XBEE.tx(incoming)
-         buildColors(incoming)      
-         if(colorsBuilt)
-            leftStrip.start("6",0,p,s,t)
-            rightStrip.start("6",1,p,s,t)
+        18:
+          XBEE.tx(incoming)
+          buildColors(incoming)      
+          if(colorsBuilt)
+            leftStrip.start("6",0,p,s,t, pressCnt)
+            rightStrip.start("6",1,p,s,t, pressCnt)
             LCD_Status := 0
             
     incoming := -1
-      !OUTA[16]
+    !OUTA[16]
  
-   buff := XBEE.RxCheck  
+    buff := XBEE.RxCheck  
     if(buff => 0)
        case XBee_Status
-          0:
-            case buff
-              2:
-                 XBee_Status := 2
-                 LCD.tx(buff)
+         0:
+           case buff
+             2:
+               XBee_Status := 2
+               LCD.tx(buff)
           
-              16:
+             16:
                XBee_Status :=16
                setState
              18:
-              XBee_Status := 18
-              setState
-              rgbState++
-                
-          2:
-            LCD.tx(buff)
-            if (buff == 4)
+               XBee_Status := 18
+               setState
+               rgbState++
+             
+         2:
+           LCD.tx(buff)
+           if (buff == 4)
              XBee_Status :=0
-          16: 
+         16: 
            if (rgbState == 0)
              Show_Num := buff      
            buildColors(buff)      
            if(colorsBuilt)
-             leftStrip.start(Show_Num,0,p,s,t)
-             rightStrip.start(Show_Num,1,p,s,t)
+             leftStrip.start(Show_Num,0,p,s,t, pressCnt)
+             rightStrip.start(Show_Num,1,p,s,t, pressCnt)
+             if(Show_Num == "*")
+               pressCnt <-= 1
+             if(Show_Num == "6")
+               pressCnt := 1
              XBee_Status := 0
-        18:      
-         buildColors(buff)      
-         if(colorsBuilt)
-            leftStrip.start("6",0,p,s,t)
-            rightStrip.start("6",1,p,s,t)
-            XBee_Status := 0
+         18:      
+           buildColors(buff)      
+           if(colorsBuilt)
+             leftStrip.start("6",0,p,s,t, pressCnt)
+             rightStrip.start("6",1,p,s,t, pressCnt)
+             XBee_Status := 0
 
       buff := -1
       !OUTA[23]

@@ -14,9 +14,11 @@ var
   byte SPI_CLK_PIN
   byte SPI_DAT_PIN
   byte cog
+  long pc 'Press Count
   
-pub start(show, side, primary, secondary, tertiary)         
+pub start(show, side, primary, secondary, tertiary, count)         
   stop
+  pc := count
   return cog := cognew(runShow(show, side, primary, secondary, tertiary), @stack)
   
 pub stop     
@@ -75,9 +77,13 @@ pub runShow(show, side, primary, secondary, tertiary)
     "9":
       repeat
         LarsonTwo
+    "*":
+      repeat
+        testing
     other:
       repeat
         clearStrip
+        
 pub LarsonTwo | counter1, counter2, Colour1_Pos, Colour2_Pos,Fade_Counter
 Colour1_Pos :=1
 Colour2_Pos :=32
@@ -209,6 +215,29 @@ pub pretty | c, w
       pushColor(c)
     latchStrip
     waitcnt(w + cnt)
+
+pub testing | c
+  if(pc == 1 OR pc == 256 OR pc == 65536 OR pc == 16777216)
+    c := $800000
+  elseif(pc == 2 OR pc == 512 OR pc == 131072 OR pc == 33554432)
+    c := $008000
+  elseif(pc == 4 OR pc == 1024 OR pc == 262144 OR pc == 67108864)
+    c := $000080
+  elseif(pc == 8 OR pc == 2048 OR pc == 524288 OR pc == 134217728)
+    c := $806000
+  elseif(pc == 16 OR pc == 4096 OR pc == 1048576 OR pc == 268435456)
+    c := $008060
+  elseif(pc == 32 OR pc == 8192 OR pc == 2097152 OR pc == 536870912)
+    c := $600080
+  elseif(pc == 64 OR pc == 16384 OR pc == 4194304 OR pc == 1073741824)
+    c := $807000
+  elseif(pc == 128 OR pc == 32768 OR pc == 8388608 OR pc == 2147483648)
+    c := $808080
+    
+  repeat leds
+    pushColor(c)
+  latchStrip
+      
   
 pub clearStrip
   repeat leds
