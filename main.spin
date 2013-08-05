@@ -15,7 +15,7 @@ OBJ
   XBEE : "FullDuplexSerial"
 
 var
-  long buff, incoming, LCD_Status, XBee_Status, p, s, t, rgbState, Show_Num
+  long buff, incoming, LCD_Status, XBee_Status, p, s, t, rgbState, Show_Num,outsync
   long pressCnt
   
 pub main | i
@@ -63,8 +63,15 @@ pub main | i
             if(Show_Num == "*")
               pressCnt <-= 1
             if(Show_Num == "6")
-              pressCnt := 1
+              if(outsync ==1)
+                pressCnt++
+              else
+                pressCnt :=1
+                outsync:=1
+            else
+              outsync :=0
             LCD_Status := 0
+          
         18:
           XBEE.tx(incoming)
           buildColors(incoming)      
